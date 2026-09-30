@@ -1,0 +1,32 @@
+{
+  "resource": "/coupons_poc",
+  "path": "/coupons_poc",
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "application/json",
+    "Host": "localhost:4566"
+  },
+  "multiValueHeaders": {
+    "Accept": ["application/json"],
+    "Host": ["localhost:4566"]
+  },
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "resourcePath": "/coupons_poc",
+    "httpMethod": "GET",
+    "path": "/dev/coupons_poc",
+    "stage": "dev",
+    "apiId": "coupons",
+    "accountId": "000000000000",
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "identity": {
+      "sourceIp": "127.0.0.1",
+      "userAgent": "PostmanRuntime/7.39.0"
+    }
+  },
+  "body": null,
+  "isBase64Encoded": false
+}

@@ -1,0 +1,53 @@
+{
+  "info": {
+    "name": "Coupons API",
+    "description": "Newman tests for the Coupons API proof of concept (GET /coupons_poc) running on LocalStack",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4566/restapis/coupons/dev/_user_request_" }
+  ],
+  "item": [
+    {
+      "name": "GET /coupons_poc",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/coupons_poc",
+          "host": ["{{baseUrl}}"],
+          "path": ["coupons_poc"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is JSON\", function () {",
+              "    pm.response.to.have.header(\"Content-Type\");",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "pm.test(\"Message is 'Coupons API is working successfully'\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.message).to.eql(\"Coupons API is working successfully\");",
+              "});",
+              "",
+              "pm.test(\"Response time is under 5000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

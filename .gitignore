@@ -1,0 +1,4 @@
+node_modules/
+coupons_list.zip
+deploy.ps1
+teardown.ps1
