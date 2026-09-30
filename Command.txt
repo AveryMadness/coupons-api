@@ -1,16 +1,13 @@
 Coupons API - Assessment Part 1 - Commands
 ===========================================
 All commands are run in PowerShell from the project folder (coupons-api).
-LocalStack is running locally on http://localhost:4566.
+LocalStack should be running locally on http://localhost:4566.
 
 
 0. SETUP
 --------
-# Check LocalStack is running (also lists deployed resources)
+# Check LocalStack is running
 lstk status
-
-# Alternative: check the health endpoint directly
-curl.exe http://localhost:4566/_localstack/health
 
 # Install AWS CLI + awslocal wrapper
 py -m pip install awscli awscli-local
@@ -137,21 +134,3 @@ npm test
 npm run newman
 # same as: npx newman run coupons_newman.json -r cli,json --reporter-json-export newman-results.json
 
-
-SHORTCUTS
----------
-# Run steps 1-5 in one go
-powershell -ExecutionPolicy Bypass -File .\deploy.ps1
-
-# Remove everything from LocalStack (to redeploy from scratch)
-powershell -ExecutionPolicy Bypass -File .\teardown.ps1
-
-
-GIT / GITHUB
-------------
-git init
-git add .
-git commit -m "Coupons API - Assessment Part 1"
-git branch -M main
-git remote add origin https://github.com/<your-username>/coupons-api.git
-git push -u origin main
