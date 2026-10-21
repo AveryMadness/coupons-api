@@ -10,5 +10,9 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "newman": "^6.2.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1154.0",
+    "@aws-sdk/lib-dynamodb": "^3.1154.0"
   }
 }

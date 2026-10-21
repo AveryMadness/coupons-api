@@ -1,0 +1,34 @@
+{
+  "resource": "/coupons/{id}",
+  "path": "/coupons/cpn-101",
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "application/json",
+    "Host": "localhost:4566"
+  },
+  "multiValueHeaders": {
+    "Accept": ["application/json"],
+    "Host": ["localhost:4566"]
+  },
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": {
+    "id": "cpn-101"
+  },
+  "stageVariables": null,
+  "requestContext": {
+    "resourcePath": "/coupons/{id}",
+    "httpMethod": "GET",
+    "path": "/dev/coupons/cpn-101",
+    "stage": "dev",
+    "apiId": "coupons",
+    "accountId": "000000000000",
+    "requestId": "d7bf0bd7-8c72-22e7-0a52-04e9ebbebeef",
+    "identity": {
+      "sourceIp": "127.0.0.1",
+      "userAgent": "PostmanRuntime/7.39.0"
+    }
+  },
+  "body": null,
+  "isBase64Encoded": false
+}

@@ -1,0 +1,49 @@
+{
+  "TableName": "coupons",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "provider_id",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "campaign_id",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "id",
+      "KeyType": "HASH"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "provider_id-campaign_id-index",
+      "KeySchema": [
+        {
+          "AttributeName": "provider_id",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "campaign_id",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 25,
+        "WriteCapacityUnits": 10
+      }
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 25,
+    "WriteCapacityUnits": 10
+  }
+}

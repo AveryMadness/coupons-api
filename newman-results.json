@@ -2,7 +2,7 @@
   "collection": {
     "item": [
       {
-        "id": "66e78f5d-42bb-4c6e-855b-2a0261c005bb",
+        "id": "b4aca479-a121-42a3-aae4-167b7546926e",
         "name": "GET /coupons_poc",
         "request": {
           "url": {
@@ -28,7 +28,7 @@
           {
             "listen": "test",
             "script": {
-              "id": "4b9e21d2-5710-40f7-9e6d-23529949f1a3",
+              "id": "6e3592e2-1dd7-4907-bef4-23e5654ae35e",
               "type": "text/javascript",
               "exec": [
                 "pm.test(\"Status code is 200\", function () {",
@@ -49,7 +49,156 @@
                 "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                 "});"
               ],
-              "_lastExecutionId": "87ee41e1-96dc-4ade-9b21-02aee8432cd2"
+              "_lastExecutionId": "376db144-aaaa-4ae9-a692-f2377a38cb38"
+            }
+          }
+        ]
+      },
+      {
+        "id": "baa7538f-008f-4bb7-ac91-0d9edccc61e2",
+        "name": "PUT /coupons/cpn-101 (Update / Insert coupon)",
+        "request": {
+          "url": {
+            "path": [
+              "coupons",
+              "cpn-101"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"provider_id\": \"prov-nike\",\n  \"campaign_id\": \"camp-summer-2026\",\n  \"title\": \"50% Off Summer Sale\",\n  \"discount\": \"50%\",\n  \"status\": \"ACTIVE\"\n}"
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "fea65224-1098-48b6-8bd4-0cf56c2e2284",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"Response indicates coupon updated successfully\", function () {",
+                "    const body = pm.response.json();",
+                "    pm.expect(body.message).to.eql(\"Coupon updated successfully\");",
+                "    pm.expect(body.coupon.id).to.eql(\"cpn-101\");",
+                "    pm.expect(body.coupon.provider_id).to.eql(\"prov-nike\");",
+                "    pm.expect(body.coupon.campaign_id).to.eql(\"camp-summer-2026\");",
+                "});"
+              ],
+              "_lastExecutionId": "6fee6b7b-c945-470b-9b8a-63cfda559ae6"
+            }
+          }
+        ]
+      },
+      {
+        "id": "51b7fb2b-1717-4d2c-be53-2bcc9c97e662",
+        "name": "GET /coupons/cpn-101 (Retrieve coupon by ID)",
+        "request": {
+          "url": {
+            "path": [
+              "coupons",
+              "cpn-101"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "702dea93-05a9-4960-9987-6a86280267d1",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});",
+                "",
+                "pm.test(\"Coupon data matches stored record\", function () {",
+                "    const body = pm.response.json();",
+                "    pm.expect(body.id).to.eql(\"cpn-101\");",
+                "    pm.expect(body.provider_id).to.eql(\"prov-nike\");",
+                "    pm.expect(body.campaign_id).to.eql(\"camp-summer-2026\");",
+                "    pm.expect(body.discount).to.eql(\"50%\");",
+                "});"
+              ],
+              "_lastExecutionId": "c7bbb708-a87a-408c-80dc-c96feb71a123"
+            }
+          }
+        ]
+      },
+      {
+        "id": "84b30783-db53-4f1c-a5e9-faa15034db45",
+        "name": "GET /coupons/non-existent-999 (Verify 404)",
+        "request": {
+          "url": {
+            "path": [
+              "coupons",
+              "non-existent-999"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "a1ce7afd-9b2f-474a-8a7e-6da0067377b5",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Status code is 404\", function () {",
+                "    pm.response.to.have.status(404);",
+                "});",
+                "",
+                "pm.test(\"Body reports coupon not found\", function () {",
+                "    const body = pm.response.json();",
+                "    pm.expect(body.message).to.include(\"not found\");",
+                "});"
+              ],
+              "_lastExecutionId": "65435067-5900-4f1c-86b5-57bfebd689fd"
             }
           }
         ]
@@ -64,21 +213,21 @@
       }
     ],
     "info": {
-      "_postman_id": "30115541-80e0-47c7-b9ac-fb230bed0b55",
+      "_postman_id": "dd80dd3c-a787-44cf-890f-6bfa489d8cf0",
       "name": "Coupons API",
       "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
       "description": {
-        "content": "Newman tests for the Coupons API proof of concept (GET /coupons_poc) running on LocalStack",
+        "content": "Newman tests for Coupons API (Assessment Part 1 & Part 2) running on LocalStack",
         "type": "text/plain"
       }
     }
   },
   "environment": {
-    "id": "a26d297e-76bf-4ba3-81ad-b9a257157854",
+    "id": "384f7b98-1a32-4823-b5b5-515a24a7fc55",
     "values": []
   },
   "globals": {
-    "id": "e5e025b0-4dd8-4210-8e6e-7961dce8f80c",
+    "id": "5c2d387d-5184-4e76-8554-14a717fbca75",
     "values": []
   },
   "run": {
@@ -89,37 +238,37 @@
         "failed": 0
       },
       "items": {
-        "total": 1,
-        "pending": 0,
-        "failed": 0
-      },
-      "scripts": {
-        "total": 1,
-        "pending": 0,
-        "failed": 0
-      },
-      "prerequests": {
-        "total": 1,
-        "pending": 0,
-        "failed": 0
-      },
-      "requests": {
-        "total": 1,
-        "pending": 0,
-        "failed": 0
-      },
-      "tests": {
-        "total": 1,
-        "pending": 0,
-        "failed": 0
-      },
-      "assertions": {
         "total": 4,
         "pending": 0,
         "failed": 0
       },
+      "scripts": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 4,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      },
       "testScripts": {
-        "total": 1,
+        "total": 4,
         "pending": 0,
         "failed": 0
       },
@@ -130,10 +279,10 @@
       }
     },
     "timings": {
-      "responseAverage": 53,
-      "responseMin": 53,
-      "responseMax": 53,
-      "responseSd": 0,
+      "responseAverage": 34.25,
+      "responseMin": 27,
+      "responseMax": 40,
+      "responseSd": 5.117372372614679,
       "dnsAverage": 0,
       "dnsMin": 0,
       "dnsMax": 0,
@@ -142,25 +291,25 @@
       "firstByteMin": 0,
       "firstByteMax": 0,
       "firstByteSd": 0,
-      "started": 1790759512748,
-      "completed": 1790759512903
+      "started": 1792579485637,
+      "completed": 1792579486104
     },
     "executions": [
       {
         "cursor": {
           "position": 0,
           "iteration": 0,
-          "length": 1,
+          "length": 4,
           "cycles": 1,
           "empty": false,
           "eof": false,
           "bof": true,
           "cr": false,
-          "ref": "db1ca059-b7b8-460c-9486-ed0b6b0f3120",
-          "httpRequestId": "9d30ae2b-8ce6-4e0b-a95b-35b5b93b1fc6"
+          "ref": "4b0faf1b-5ddf-4b21-a5be-74b79850e8c9",
+          "httpRequestId": "810916b8-b24d-4437-9b90-806e7ebe0a7a"
         },
         "item": {
-          "id": "66e78f5d-42bb-4c6e-855b-2a0261c005bb",
+          "id": "b4aca479-a121-42a3-aae4-167b7546926e",
           "name": "GET /coupons_poc",
           "request": {
             "url": {
@@ -186,7 +335,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "4b9e21d2-5710-40f7-9e6d-23529949f1a3",
+                "id": "6e3592e2-1dd7-4907-bef4-23e5654ae35e",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status code is 200\", function () {",
@@ -207,7 +356,7 @@
                   "    pm.expect(pm.response.responseTime).to.be.below(5000);",
                   "});"
                 ],
-                "_lastExecutionId": "87ee41e1-96dc-4ade-9b21-02aee8432cd2"
+                "_lastExecutionId": "376db144-aaaa-4ae9-a692-f2377a38cb38"
               }
             }
           ]
@@ -246,7 +395,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "3ec0e0ff-f5a2-49bd-8fe8-7dedfa7c5249",
+              "value": "c0fd4664-2db0-4035-9e9a-5fff60e342e7",
               "system": true
             },
             {
@@ -268,7 +417,7 @@
           "method": "GET"
         },
         "response": {
-          "id": "7bc2e68e-2968-43f3-a8ff-7897af4052bc",
+          "id": "354ca03f-05ef-4cf1-86ef-34e7bcf9dd9f",
           "status": "OK",
           "code": 200,
           "header": [
@@ -278,7 +427,7 @@
             },
             {
               "key": "Date",
-              "value": "Wed, 30 Sep 2026 09:11:52 GMT"
+              "value": "Wed, 21 Oct 2026 10:44:45 GMT"
             },
             {
               "key": "Content-Type",
@@ -294,19 +443,19 @@
             },
             {
               "key": "x-amzn-RequestId",
-              "value": "e17a7ee4-e8a4-455f-936a-76a8fb1d3e3a"
+              "value": "980c07f6-91b4-4ea8-91e7-0bb1cd152f33"
             },
             {
               "key": "x-amz-apigw-id",
-              "value": "62019227="
+              "value": "bd4b7d57="
             },
             {
               "key": "X-Amzn-Trace-Id",
-              "value": "Root=1-6abcd258-d09ba172bd19414ba95e2996;Parent=56002649e94e0187;Sampled=0"
+              "value": "Root=1-6ad8979d-d1ea857fbe413376b91748a4;Parent=2ae69230b903e608;Sampled=0"
             },
             {
               "key": "x-localstack",
-              "value": "2026.8.5"
+              "value": "2026.10.0"
             }
           ],
           "stream": {
@@ -364,10 +513,10 @@
             ]
           },
           "cookie": [],
-          "responseTime": 53,
+          "responseTime": 38,
           "responseSize": 49
         },
-        "id": "66e78f5d-42bb-4c6e-855b-2a0261c005bb",
+        "id": "b4aca479-a121-42a3-aae4-167b7546926e",
         "assertions": [
           {
             "assertion": "Status code is 200",
@@ -386,10 +535,1024 @@
             "skipped": false
           }
         ]
+      },
+      {
+        "cursor": {
+          "ref": "24ccf1c4-1bfd-4f60-90a0-9689f28d94cd",
+          "length": 4,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "9c830147-63e9-4368-bd76-aad3b22967b4"
+        },
+        "item": {
+          "id": "baa7538f-008f-4bb7-ac91-0d9edccc61e2",
+          "name": "PUT /coupons/cpn-101 (Update / Insert coupon)",
+          "request": {
+            "url": {
+              "path": [
+                "coupons",
+                "cpn-101"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider_id\": \"prov-nike\",\n  \"campaign_id\": \"camp-summer-2026\",\n  \"title\": \"50% Off Summer Sale\",\n  \"discount\": \"50%\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fea65224-1098-48b6-8bd4-0cf56c2e2284",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates coupon updated successfully\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.message).to.eql(\"Coupon updated successfully\");",
+                  "    pm.expect(body.coupon.id).to.eql(\"cpn-101\");",
+                  "    pm.expect(body.coupon.provider_id).to.eql(\"prov-nike\");",
+                  "    pm.expect(body.coupon.campaign_id).to.eql(\"camp-summer-2026\");",
+                  "});"
+                ],
+                "_lastExecutionId": "6fee6b7b-c945-470b-9b8a-63cfda559ae6"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "4566",
+            "path": [
+              "restapis",
+              "coupons",
+              "dev",
+              "_user_request_",
+              "coupons",
+              "cpn-101"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "9b20f63e-e004-403a-a27a-9dedf8469c5e",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:4566",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "146",
+              "system": true
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"provider_id\": \"prov-nike\",\n  \"campaign_id\": \"camp-summer-2026\",\n  \"title\": \"50% Off Summer Sale\",\n  \"discount\": \"50%\",\n  \"status\": \"ACTIVE\"\n}"
+          }
+        },
+        "response": {
+          "id": "8292487f-1729-4967-827c-c359628b537e",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Server",
+              "value": "TwistedWeb/26.4.0"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 21 Oct 2026 10:44:45 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Content-Length",
+              "value": "231"
+            },
+            {
+              "key": "x-amzn-RequestId",
+              "value": "eb4d1f4a-5164-42e6-abeb-e7a51e256543"
+            },
+            {
+              "key": "x-amz-apigw-id",
+              "value": "eba2009c="
+            },
+            {
+              "key": "X-Amzn-Trace-Id",
+              "value": "Root=1-6ad8979d-42d6bf84b4577897a9d83255;Parent=a661b6c1e358c6e7;Sampled=0"
+            },
+            {
+              "key": "x-localstack",
+              "value": "2026.10.0"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              67,
+              111,
+              117,
+              112,
+              111,
+              110,
+              32,
+              117,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              32,
+              115,
+              117,
+              99,
+              99,
+              101,
+              115,
+              115,
+              102,
+              117,
+              108,
+              108,
+              121,
+              34,
+              44,
+              34,
+              99,
+              111,
+              117,
+              112,
+              111,
+              110,
+              34,
+              58,
+              123,
+              34,
+              99,
+              97,
+              109,
+              112,
+              97,
+              105,
+              103,
+              110,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              99,
+              97,
+              109,
+              112,
+              45,
+              115,
+              117,
+              109,
+              109,
+              101,
+              114,
+              45,
+              50,
+              48,
+              50,
+              54,
+              34,
+              44,
+              34,
+              100,
+              105,
+              115,
+              99,
+              111,
+              117,
+              110,
+              116,
+              34,
+              58,
+              34,
+              53,
+              48,
+              37,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              99,
+              112,
+              110,
+              45,
+              49,
+              48,
+              49,
+              34,
+              44,
+              34,
+              112,
+              114,
+              111,
+              118,
+              105,
+              100,
+              101,
+              114,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              112,
+              114,
+              111,
+              118,
+              45,
+              110,
+              105,
+              107,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              65,
+              67,
+              84,
+              73,
+              86,
+              69,
+              34,
+              44,
+              34,
+              116,
+              105,
+              116,
+              108,
+              101,
+              34,
+              58,
+              34,
+              53,
+              48,
+              37,
+              32,
+              79,
+              102,
+              102,
+              32,
+              83,
+              117,
+              109,
+              109,
+              101,
+              114,
+              32,
+              83,
+              97,
+              108,
+              101,
+              34,
+              44,
+              34,
+              117,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              95,
+              97,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              49,
+              84,
+              49,
+              48,
+              58,
+              52,
+              52,
+              58,
+              52,
+              53,
+              46,
+              56,
+              51,
+              54,
+              90,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 40,
+          "responseSize": 231
+        },
+        "id": "baa7538f-008f-4bb7-ac91-0d9edccc61e2",
+        "assertions": [
+          {
+            "assertion": "Status code is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Response indicates coupon updated successfully",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "309c2492-e7a1-4936-9058-d1ab943da1b6",
+          "length": 4,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "dd819a54-8dee-4183-87a4-663e69cd1227"
+        },
+        "item": {
+          "id": "51b7fb2b-1717-4d2c-be53-2bcc9c97e662",
+          "name": "GET /coupons/cpn-101 (Retrieve coupon by ID)",
+          "request": {
+            "url": {
+              "path": [
+                "coupons",
+                "cpn-101"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "702dea93-05a9-4960-9987-6a86280267d1",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Coupon data matches stored record\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.eql(\"cpn-101\");",
+                  "    pm.expect(body.provider_id).to.eql(\"prov-nike\");",
+                  "    pm.expect(body.campaign_id).to.eql(\"camp-summer-2026\");",
+                  "    pm.expect(body.discount).to.eql(\"50%\");",
+                  "});"
+                ],
+                "_lastExecutionId": "c7bbb708-a87a-408c-80dc-c96feb71a123"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "4566",
+            "path": [
+              "restapis",
+              "coupons",
+              "dev",
+              "_user_request_",
+              "coupons",
+              "cpn-101"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "58d90a79-8a38-4caf-82d4-d548dfc05d92",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:4566",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "ae7faf15-dd49-4edf-b9e1-f66927d48ab6",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Server",
+              "value": "TwistedWeb/26.4.0"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 21 Oct 2026 10:44:45 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Content-Length",
+              "value": "180"
+            },
+            {
+              "key": "x-amzn-RequestId",
+              "value": "bf93e61f-1cf8-440d-8f3b-fe6f96246e82"
+            },
+            {
+              "key": "x-amz-apigw-id",
+              "value": "02e66c2d="
+            },
+            {
+              "key": "X-Amzn-Trace-Id",
+              "value": "Root=1-6ad8979d-e91f3b7e05fb8ae81b349723;Parent=a3317bd68d2aaaa5;Sampled=0"
+            },
+            {
+              "key": "x-localstack",
+              "value": "2026.10.0"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              99,
+              97,
+              109,
+              112,
+              97,
+              105,
+              103,
+              110,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              99,
+              97,
+              109,
+              112,
+              45,
+              115,
+              117,
+              109,
+              109,
+              101,
+              114,
+              45,
+              50,
+              48,
+              50,
+              54,
+              34,
+              44,
+              34,
+              100,
+              105,
+              115,
+              99,
+              111,
+              117,
+              110,
+              116,
+              34,
+              58,
+              34,
+              53,
+              48,
+              37,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              99,
+              112,
+              110,
+              45,
+              49,
+              48,
+              49,
+              34,
+              44,
+              34,
+              112,
+              114,
+              111,
+              118,
+              105,
+              100,
+              101,
+              114,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              112,
+              114,
+              111,
+              118,
+              45,
+              110,
+              105,
+              107,
+              101,
+              34,
+              44,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              65,
+              67,
+              84,
+              73,
+              86,
+              69,
+              34,
+              44,
+              34,
+              116,
+              105,
+              116,
+              108,
+              101,
+              34,
+              58,
+              34,
+              53,
+              48,
+              37,
+              32,
+              79,
+              102,
+              102,
+              32,
+              83,
+              117,
+              109,
+              109,
+              101,
+              114,
+              32,
+              83,
+              97,
+              108,
+              101,
+              34,
+              44,
+              34,
+              117,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              95,
+              97,
+              116,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              49,
+              84,
+              49,
+              48,
+              58,
+              52,
+              52,
+              58,
+              52,
+              53,
+              46,
+              56,
+              51,
+              54,
+              90,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 32,
+          "responseSize": 180
+        },
+        "id": "51b7fb2b-1717-4d2c-be53-2bcc9c97e662",
+        "assertions": [
+          {
+            "assertion": "Status code is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Coupon data matches stored record",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "ed79b2d5-5331-4d68-bb49-0709c6c07f69",
+          "length": 4,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "e396c796-d41e-4844-9b43-3ebb5bed20ff"
+        },
+        "item": {
+          "id": "84b30783-db53-4f1c-a5e9-faa15034db45",
+          "name": "GET /coupons/non-existent-999 (Verify 404)",
+          "request": {
+            "url": {
+              "path": [
+                "coupons",
+                "non-existent-999"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a1ce7afd-9b2f-474a-8a7e-6da0067377b5",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Body reports coupon not found\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.message).to.include(\"not found\");",
+                  "});"
+                ],
+                "_lastExecutionId": "65435067-5900-4f1c-86b5-57bfebd689fd"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "4566",
+            "path": [
+              "restapis",
+              "coupons",
+              "dev",
+              "_user_request_",
+              "coupons",
+              "non-existent-999"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "a628354e-a4d9-470e-9876-db0656083698",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:4566",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "08bd6664-9039-4d9c-a04e-8872f408aefd",
+          "status": "NOT FOUND",
+          "code": 404,
+          "header": [
+            {
+              "key": "Server",
+              "value": "TwistedWeb/26.4.0"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 21 Oct 2026 10:44:46 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Content-Length",
+              "value": "57"
+            },
+            {
+              "key": "x-amzn-RequestId",
+              "value": "9db09d29-4939-4578-8ca3-872dbd238da6"
+            },
+            {
+              "key": "x-amz-apigw-id",
+              "value": "faf59b79="
+            },
+            {
+              "key": "X-Amzn-Trace-Id",
+              "value": "Root=1-6ad8979e-4df4255d4667ae7e0b449e5f;Parent=1740bce144851f90;Sampled=0"
+            },
+            {
+              "key": "x-localstack",
+              "value": "2026.10.0"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              67,
+              111,
+              117,
+              112,
+              111,
+              110,
+              32,
+              119,
+              105,
+              116,
+              104,
+              32,
+              105,
+              100,
+              32,
+              39,
+              110,
+              111,
+              110,
+              45,
+              101,
+              120,
+              105,
+              115,
+              116,
+              101,
+              110,
+              116,
+              45,
+              57,
+              57,
+              57,
+              39,
+              32,
+              110,
+              111,
+              116,
+              32,
+              102,
+              111,
+              117,
+              110,
+              100,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 27,
+          "responseSize": 57
+        },
+        "id": "84b30783-db53-4f1c-a5e9-faa15034db45",
+        "assertions": [
+          {
+            "assertion": "Status code is 404",
+            "skipped": false
+          },
+          {
+            "assertion": "Body reports coupon not found",
+            "skipped": false
+          }
+        ]
       }
     ],
     "transfers": {
-      "responseTotal": 49
+      "responseTotal": 517
     },
     "failures": [],
     "error": null

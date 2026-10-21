@@ -1,35 +1,45 @@
-Coupons API - Assessment Part 1 - Commands
-===========================================
 All commands are run in PowerShell from the project folder (coupons-api).
-LocalStack should be running locally on http://localhost:4566.
+LocalStack should be running on http://localhost:4566 (e.g., via `lstk` or Docker).
+
+DYNAMODB CAPACITY UNIT CALCULATIONS (Assessment Part 2 Requirement 1):
+----------------------------------------------------------------------
+• Read Requirements: 50 eventually consistent reads per second, 1 KB item size.
+  - 1 Read Capacity Unit (RCU) = 1 strongly consistent read of up to 4 KB/sec
+    OR 2 eventually consistent reads of up to 4 KB/sec.
+  - 1 KB item size rounds up to 4 KB.
+  - Since reads are eventually consistent: 50 * (1/2) = 25 RCU.
+• Write Requirements: 10 writes per second, 1 KB item size.
+  - 1 Write Capacity Unit (WCU) = 1 write of up to 1 KB/sec.
+  - Since item size is 1 KB: 10 * 1 = 10 WCU.
+• Conclusion: ProvisionedThroughput is ReadCapacityUnits=25, WriteCapacityUnits=10.
 
 
-0. SETUP
---------
-# Check LocalStack is running
+0. ENVIRONMENT & LOCALSTACK SETUP
+----------------------------------
+# Check LocalStack status
 lstk status
 
-# Install AWS CLI + awslocal wrapper
-py -m pip install awscli awscli-local
-
-# Install project dependencies (Jest for unit tests, Newman for API tests)
-npm install
+# Ensure Python and awslocal are in the PATH (if not already globally accessible)
+$pyHome = "$env:LOCALAPPDATA\Python\pythoncore-3.14-64"
+$env:PATH = "$pyHome;$pyHome\Scripts;$env:PATH"
 
 # Dummy credentials for LocalStack
 $env:AWS_ACCESS_KEY_ID = "test"
 $env:AWS_SECRET_ACCESS_KEY = "test"
 $env:AWS_DEFAULT_REGION = "us-east-1"
 
+# Install project dependencies
+npm install
 
-1. CREATE IAM ROLE coupons_lambda_role
---------------------------------------
+
+1. IAM ROLE AND POLICIES SETUP
+------------------------------
+# Create IAM role for Lambda functions
 awslocal iam create-role `
   --role-name coupons_lambda_role `
   --assume-role-policy-document file://iam/trust-policy.json
 
-
-2. CLOUDWATCH LOGS PERMISSIONS (only log groups prefixed /aws/lambda/coupons*)
-------------------------------------------------------------------------------
+# Create and attach CloudWatch Logs policy (restricted to /aws/lambda/coupons*)
 awslocal iam create-policy `
   --policy-name coupons_lambda_logs_policy `
   --policy-document file://iam/coupons-logs-policy.json
@@ -38,17 +48,52 @@ awslocal iam attach-role-policy `
   --role-name coupons_lambda_role `
   --policy-arn "arn:aws:iam::000000000000:policy/coupons_lambda_logs_policy"
 
-# Verify
+# Create and attach DynamoDB Access policy (GetItem, PutItem, Query, etc. on coupons table)
+awslocal iam create-policy `
+  --policy-name coupons_lambda_dynamodb_policy `
+  --policy-document file://iam/coupons-dynamodb-policy.json
+
+awslocal iam attach-role-policy `
+  --role-name coupons_lambda_role `
+  --policy-arn "arn:aws:iam::000000000000:policy/coupons_lambda_dynamodb_policy"
+
+# Verify attached policies
 awslocal iam list-attached-role-policies --role-name coupons_lambda_role
-awslocal iam get-policy-version `
-  --policy-arn "arn:aws:iam::000000000000:policy/coupons_lambda_logs_policy" `
-  --version-id v1
 
 
-3. CREATE LAMBDA FUNCTION coupons_list
---------------------------------------
-Compress-Archive -Path src\index.js -DestinationPath coupons_list.zip -Force
+2. CREATE DYNAMODB TABLE "coupons"
+-----------------------------------
+# Create the table with 25 RCU and 10 WCU
+awslocal dynamodb create-table `
+  --cli-input-json file://dynamodb/create-table.json
 
+# Wait for the table to become active
+awslocal dynamodb wait table-exists --table-name coupons
+
+# Verify table creation and provisioned capacity
+awslocal dynamodb describe-table --table-name coupons
+
+
+3. UPDATE DYNAMODB TABLE WITH SECONDARY INDEX (provider_id & campaign_id)
+--------------------------------------------------------------------------
+# Add Global Secondary Index for performant queries on provider_id and campaign_id
+awslocal dynamodb update-table `
+  --table-name coupons `
+  --attribute-definitions AttributeName=provider_id,AttributeType=S AttributeName=campaign_id,AttributeType=S `
+  --global-secondary-index-updates file://dynamodb/gsi-update.json
+
+# Verify the GSI was registered
+awslocal dynamodb describe-table --table-name coupons --query "Table.GlobalSecondaryIndexes"
+
+
+4. PACKAGE AND REGISTER LAMBDA FUNCTIONS
+----------------------------------------
+# Package the Lambda source code
+Compress-Archive -Path src\* -DestinationPath coupons_list.zip -Force
+Compress-Archive -Path src\* -DestinationPath coupons_get_by_id.zip -Force
+Compress-Archive -Path src\* -DestinationPath coupons_update.zip -Force
+
+# Register coupons_list (Assessment Part 1)
 awslocal lambda create-function `
   --function-name coupons_list `
   --runtime nodejs20.x `
@@ -56,57 +101,87 @@ awslocal lambda create-function `
   --zip-file fileb://coupons_list.zip `
   --role "arn:aws:iam::000000000000:role/coupons_lambda_role"
 
+# Register coupons_get_by_id (Assessment Part 2)
+awslocal lambda create-function `
+  --function-name coupons_get_by_id `
+  --runtime nodejs20.x `
+  --handler coupons_get_by_id.handler `
+  --zip-file fileb://coupons_get_by_id.zip `
+  --role "arn:aws:iam::000000000000:role/coupons_lambda_role"
+
+# Register coupons_update (Assessment Part 2)
+awslocal lambda create-function `
+  --function-name coupons_update `
+  --runtime nodejs20.x `
+  --handler coupons_update.handler `
+  --zip-file fileb://coupons_update.zip `
+  --role "arn:aws:iam::000000000000:role/coupons_lambda_role"
+
+# Wait for all Lambda functions to become active
 awslocal lambda wait function-active-v2 --function-name coupons_list
+awslocal lambda wait function-active-v2 --function-name coupons_get_by_id
+awslocal lambda wait function-active-v2 --function-name coupons_update
 
 
-4. INVOKE LAMBDA WITH A SAMPLE API GATEWAY EVENT (writes output.json)
----------------------------------------------------------------------
+5. INVOKE LAMBDAS WITH SAMPLE API GATEWAY EVENTS
+------------------------------------------------
+# Invoke coupons_list
 awslocal lambda invoke `
   --function-name coupons_list `
   --payload file://events/coupons_list_event.json `
-  output.json
+  output_list.json
+Get-Content output_list.json
 
-Get-Content output.json
+# Invoke coupons_update to seed test record cpn-101 into DynamoDB
+awslocal lambda invoke `
+  --function-name coupons_update `
+  --payload file://events/coupons_update_event.json `
+  output_update.json
+Get-Content output_update.json
+
+# Invoke coupons_get_by_id to fetch cpn-101 from DynamoDB
+awslocal lambda invoke `
+  --function-name coupons_get_by_id `
+  --payload file://events/coupons_get_by_id_event.json `
+  output_get.json
+Get-Content output_get.json
 
 
-5. ADD GET /coupons_poc ENDPOINT TO API GATEWAY
------------------------------------------------
-# Create the REST API (custom id "coupons" keeps the URL stable)
+6. CONFIGURE API GATEWAY
+------------------------
+# Create REST API
 awslocal apigateway create-rest-api `
   --name coupons-api `
   --tags _custom_id_=coupons
 
-# Get the root "/" resource id
+# Get root resource ID ("/")
 $ROOT_ID = awslocal apigateway get-resources `
   --rest-api-id coupons `
   --query "items[?path=='/'].id" `
   --output text
 
-# Create the /coupons_poc resource
-$RESOURCE_ID = awslocal apigateway create-resource `
+# 6.1 /coupons_poc resource and GET method
+$POC_ID = awslocal apigateway create-resource `
   --rest-api-id coupons `
   --parent-id $ROOT_ID `
   --path-part coupons_poc `
   --query "id" `
   --output text
 
-# Add the GET method
 awslocal apigateway put-method `
   --rest-api-id coupons `
-  --resource-id $RESOURCE_ID `
+  --resource-id $POC_ID `
   --http-method GET `
   --authorization-type NONE
 
-# Connect GET to the coupons_list Lambda (proxy integration)
 awslocal apigateway put-integration `
   --rest-api-id coupons `
-  --resource-id $RESOURCE_ID `
+  --resource-id $POC_ID `
   --http-method GET `
   --type AWS_PROXY `
   --integration-http-method POST `
   --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:coupons_list/invocations"
 
-# Allow API Gateway to invoke the Lambda
 awslocal lambda add-permission `
   --function-name coupons_list `
   --statement-id apigateway-coupons-poc `
@@ -114,23 +189,106 @@ awslocal lambda add-permission `
   --principal apigateway.amazonaws.com `
   --source-arn "arn:aws:execute-api:us-east-1:000000000000:coupons/*/GET/coupons_poc"
 
-# Deploy the API to the "dev" stage
+# 6.2 /coupons resource
+$COUPONS_ID = awslocal apigateway create-resource `
+  --rest-api-id coupons `
+  --parent-id $ROOT_ID `
+  --path-part coupons `
+  --query "id" `
+  --output text
+
+# 6.3 /coupons/{id} resource
+$COUPON_PARAM_ID = awslocal apigateway create-resource `
+  --rest-api-id coupons `
+  --parent-id $COUPONS_ID `
+  --path-part '{id}' `
+  --query "id" `
+  --output text
+
+# GET /coupons/{id} -> coupons_get_by_id
+awslocal apigateway put-method `
+  --rest-api-id coupons `
+  --resource-id $COUPON_PARAM_ID `
+  --http-method GET `
+  --authorization-type NONE
+
+awslocal apigateway put-integration `
+  --rest-api-id coupons `
+  --resource-id $COUPON_PARAM_ID `
+  --http-method GET `
+  --type AWS_PROXY `
+  --integration-http-method POST `
+  --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:coupons_get_by_id/invocations"
+
+awslocal lambda add-permission `
+  --function-name coupons_get_by_id `
+  --statement-id apigateway-coupons-get-by-id `
+  --action lambda:InvokeFunction `
+  --principal apigateway.amazonaws.com `
+  --source-arn "arn:aws:execute-api:us-east-1:000000000000:coupons/*/GET/coupons/*"
+
+# PUT /coupons/{id} -> coupons_update
+awslocal apigateway put-method `
+  --rest-api-id coupons `
+  --resource-id $COUPON_PARAM_ID `
+  --http-method PUT `
+  --authorization-type NONE
+
+awslocal apigateway put-integration `
+  --rest-api-id coupons `
+  --resource-id $COUPON_PARAM_ID `
+  --http-method PUT `
+  --type AWS_PROXY `
+  --integration-http-method POST `
+  --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:coupons_update/invocations"
+
+awslocal lambda add-permission `
+  --function-name coupons_update `
+  --statement-id apigateway-coupons-update `
+  --action lambda:InvokeFunction `
+  --principal apigateway.amazonaws.com `
+  --source-arn "arn:aws:execute-api:us-east-1:000000000000:coupons/*/PUT/coupons/*"
+
+# Deploy API to "dev" stage
 awslocal apigateway create-deployment `
   --rest-api-id coupons `
   --stage-name dev
 
-# Test the endpoint
-curl.exe http://localhost:4566/restapis/coupons/dev/_user_request_/coupons_poc
+
+7. TEST API GATEWAY ENDPOINTS
+------------------------------
+# Test 1: GET /coupons_poc
+curl.exe -s http://localhost:4566/restapis/coupons/dev/_user_request_/coupons_poc
+
+# Test 2: PUT /coupons/cpn-101 (Create / Update coupon)
+curl.exe -s -X PUT http://localhost:4566/restapis/coupons/dev/_user_request_/coupons/cpn-101 `
+  -H "Content-Type: application/json" `
+  -d "{\"provider_id\":\"prov-nike\",\"campaign_id\":\"camp-summer-2026\",\"title\":\"50% Off Summer Sale\",\"discount\":\"50%\"}"
+
+# Test 3: GET /coupons/cpn-101 (Retrieve coupon by ID)
+curl.exe -s http://localhost:4566/restapis/coupons/dev/_user_request_/coupons/cpn-101
+
+# Test 4: Query DynamoDB using the GSI (provider_id & campaign_id)
+awslocal dynamodb query `
+  --table-name coupons `
+  --index-name provider_id-campaign_id-index `
+  --key-condition-expression "provider_id = :p AND campaign_id = :c" `
+  --expression-attribute-values '{\":p\":{\"S\":\"prov-nike\"}, \":c\":{\"S\":\"camp-summer-2026\"}}'
 
 
-6. UNIT TEST (Jest -> unit-test-results.json)
----------------------------------------------
+8. AUTOMATED TESTING
+--------------------
+# Run Jest Unit Tests (exports to unit-test-results.json)
 npm test
-# same as: npx jest --json --outputFile=unit-test-results.json --verbose
 
-
-7. NEWMAN TEST (coupons_newman.json -> newman-results.json)
------------------------------------------------------------
+# Run Newman Postman Integration Tests (exports to newman-results.json)
 npm run newman
-# same as: npx newman run coupons_newman.json -r cli,json --reporter-json-export newman-results.json
 
+
+9. AUTOMATED SCRIPT EXECUTION
+------------------------------
+# Full deploy:
+powershell -ExecutionPolicy Bypass -File .\deploy.ps1
+
+# Full teardown:
+powershell -ExecutionPolicy Bypass -File .\teardown.ps1

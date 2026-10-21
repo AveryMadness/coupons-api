@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Coupons API",
-    "description": "Newman tests for the Coupons API proof of concept (GET /coupons_poc) running on LocalStack",
+    "description": "Newman tests for Coupons API (Assessment Part 1 & Part 2) running on LocalStack",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -43,6 +43,113 @@
               "",
               "pm.test(\"Response time is under 5000ms\", function () {",
               "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT /coupons/cpn-101 (Update / Insert coupon)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"provider_id\": \"prov-nike\",\n  \"campaign_id\": \"camp-summer-2026\",\n  \"title\": \"50% Off Summer Sale\",\n  \"discount\": \"50%\",\n  \"status\": \"ACTIVE\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/coupons/cpn-101",
+          "host": ["{{baseUrl}}"],
+          "path": ["coupons", "cpn-101"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response indicates coupon updated successfully\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.message).to.eql(\"Coupon updated successfully\");",
+              "    pm.expect(body.coupon.id).to.eql(\"cpn-101\");",
+              "    pm.expect(body.coupon.provider_id).to.eql(\"prov-nike\");",
+              "    pm.expect(body.coupon.campaign_id).to.eql(\"camp-summer-2026\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /coupons/cpn-101 (Retrieve coupon by ID)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/coupons/cpn-101",
+          "host": ["{{baseUrl}}"],
+          "path": ["coupons", "cpn-101"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Coupon data matches stored record\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.id).to.eql(\"cpn-101\");",
+              "    pm.expect(body.provider_id).to.eql(\"prov-nike\");",
+              "    pm.expect(body.campaign_id).to.eql(\"camp-summer-2026\");",
+              "    pm.expect(body.discount).to.eql(\"50%\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /coupons/non-existent-999 (Verify 404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/coupons/non-existent-999",
+          "host": ["{{baseUrl}}"],
+          "path": ["coupons", "non-existent-999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Body reports coupon not found\", function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.message).to.include(\"not found\");",
               "});"
             ]
           }

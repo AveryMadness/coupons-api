@@ -1,0 +1,36 @@
+{
+  "resource": "/coupons/{id}",
+  "path": "/coupons/cpn-101",
+  "httpMethod": "PUT",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Host": "localhost:4566"
+  },
+  "multiValueHeaders": {
+    "Accept": ["application/json"],
+    "Content-Type": ["application/json"],
+    "Host": ["localhost:4566"]
+  },
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": {
+    "id": "cpn-101"
+  },
+  "stageVariables": null,
+  "requestContext": {
+    "resourcePath": "/coupons/{id}",
+    "httpMethod": "PUT",
+    "path": "/dev/coupons/cpn-101",
+    "stage": "dev",
+    "apiId": "coupons",
+    "accountId": "000000000000",
+    "requestId": "e8cf1ce8-9d83-33f8-1b63-15fafecebeef",
+    "identity": {
+      "sourceIp": "127.0.0.1",
+      "userAgent": "PostmanRuntime/7.39.0"
+    }
+  },
+  "body": "{\"provider_id\":\"prov-nike\",\"campaign_id\":\"camp-summer-2026\",\"title\":\"50% Off Summer Sale\",\"discount\":\"50%\",\"status\":\"ACTIVE\"}",
+  "isBase64Encoded": false
+}
